@@ -57,6 +57,17 @@ export const getRandomPosition = (xmin, xmax, ymin, ymax) => {
 // is p2 within r of p1
 export const isInRadiusOfPosition = (p1, p2, r) => p1.distanceTo(p2) <= r;
 
+// is p within the rectangle with bottom right corner at pRect, and width
+// and height wRect, hRect
+export const isInRectangleWithBottomRight = (p, pRect, wRect, hRect) => {
+  return (
+    p.x >= pRect.x &&
+    p.x <= pRect.x + wRect &&
+    p.y >= pRect.y &&
+    p.y <= pRect.y + hRect
+  );
+};
+
 // Taken from https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 export const generateUniqueId = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

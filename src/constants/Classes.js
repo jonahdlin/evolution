@@ -213,6 +213,104 @@ export class Creature {
 
   get position() { return this._position; }
 
+  get genes() {
+    return {
+      'id': {
+        displayName: 'Id',
+        value: this._id,
+      },
+      'speed': {
+        displayName: 'Speed',
+        value: this._speed,
+      },
+      'strength': {
+        displayName: 'Strength',
+        value: this._strength,
+      },
+      'boredomFood': {
+        displayName: 'Boredom food',
+        value: this._boredomFood,
+      },
+      'boredomMate': {
+        displayName: 'Boredom mate',
+        value: this._boredomMate,
+      },
+      'energyLostToChild': {
+        displayName: 'Energy lost to child',
+        value: this._energyLostToChild,
+      },
+      'energyLostToCombat': {
+        displayName: 'Energy lost to combat',
+        value: this._energyLostToCombat,
+      },
+      'likelihoodPursueFood': {
+        displayName: 'Likelihood pursue food',
+        value: this._likelihoodPursueFood,
+      },
+      'matingAgreeableness': {
+        displayName: 'Mating agreeableness',
+        value: this._matingAgreeableness,
+      },
+      'likelihoodTurnRight': {
+        displayName: 'Likelihood turn right',
+        value: this._likelihoodTurnRight,
+      },
+      'likelihoodTurnLeft': {
+        displayName: 'Likelihood turn left',
+        value: this._likelihoodTurnLeft,
+      },
+      'angleTurn': {
+        displayName: 'Angle turn',
+        value: this._angleTurn,
+      },
+      'variationAngleTurn': {
+        displayName: 'Variation angle turn',
+        value: this._variationAngleTurn,
+      },
+    };
+  }
+
+  get status() {
+    return {
+      'positionX': {
+        displayName: 'Position X',
+        value: this._position.x,
+      },
+      'positionY': {
+        displayName: 'Position Y',
+        value: this._position.y,
+      },
+      'direction': {
+        displayName: 'Direction',
+        value: this._direction,
+      },
+      'energy': {
+        displayName: 'Energy',
+        value: this._energy,
+      },
+      'isSeekingMate': {
+        displayName: 'Is seeking mate',
+        value: this._isSeekingMate,
+      },
+      'idOfMate': {
+        displayName: 'Id of mate',
+        value: this._idOfMate,
+      },
+      'isSeekingFood': {
+        displayName: 'Is seeking food',
+        value: this._isSeekingFood,
+      },
+      'idOfFood': {
+        displayName: 'Id of food',
+        value: this._idOfFood,
+      },
+      'locationOfFood': {
+        displayName: 'Location of food',
+        value: this._locationOfFood,
+      },
+    };
+  }
+
   changePosition(position) {
     if (position.x === this._position.x && position.y === this._position.y) {
       return;

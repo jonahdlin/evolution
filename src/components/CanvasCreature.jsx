@@ -3,9 +3,10 @@ import { CREATURE_WIDTH, CREATURE_HEIGHT, SIGHT_RADIUS } from '../constants/Cons
 const CanvasCreature = ({
   context,
   creature,
-  showVisionCircle
+  showVisionCircle,
+  isSelected,
 }) => {
-  context.fillStyle = 'blue';
+  context.fillStyle = isSelected ? 'purple' : 'blue';
   context.fillRect(creature.position.x, creature.position.y, CREATURE_WIDTH, CREATURE_HEIGHT);
 
   if (showVisionCircle) {

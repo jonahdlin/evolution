@@ -15,6 +15,7 @@ import {
   ButtonWrapper,
   InputWrapper
 } from '../styles/ControlPanel';
+import { SIMULATION_SPEED_SLIDER_MIN, SIMULATION_SPEED_SLIDER_MAX } from '../constants/Constants';
 
 const ControlPanel = ({
   initialCreatures,
@@ -43,8 +44,8 @@ const ControlPanel = ({
         </ButtonWrapper>
         <SliderWrapper>
           <Slider
-            min={1}
-            max={500}
+            min={SIMULATION_SPEED_SLIDER_MIN}
+            max={SIMULATION_SPEED_SLIDER_MAX}
             value={simulationSpeed}
             onChange={onChangeSpeed}
           />
