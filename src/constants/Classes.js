@@ -1,8 +1,13 @@
-import { isUndefined } from 'lodash';
+import { isUndefined, isEmpty } from 'lodash';
 import {
   generateUniqueId,
   selectOutcomeWithProbabilities,
-  getRandomValueInRange
+  getRandomValueInRange,
+  arctan,
+  getNewPosition,
+  doesOccurWithProbability,
+  getFoodsInProximity,
+  getCreaturesInProximity
 } from '../utils/UtilFunctions';
 import {
   randomizeSpeed,
@@ -11,7 +16,7 @@ import {
   randomizeBoredomMate,
   randomizeEnergyLostToChild,
   randomizeEnergyLostToCombat,
-  randomizeFoodMatePreference,
+  randomizeLikelihoodPursueFood,
   randomizeMatingAgreeableness,
   randomizeLikelihoodTurnRight,
   randomizeLikelihoodTurnLeft,
@@ -98,6 +103,12 @@ export class Position {
   get y() {
     return this._y;
   }
+
+  distanceTo(position2) {
+    const dx = Math.abs(position2.x - this._x);
+    const dy = Math.abs(position2.y - this._y);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
 };
 
 export class Food {
@@ -141,7 +152,7 @@ export class CreatureCombatResult {
   boredomMate,
   energyLostToChild,
   energyLostToCombat,
-  foodMatePreference,
+  likelihoodPursueFood,
   matingAgreeableness,
   likelihoodTurnRight,
   likelihoodTurnLeft,
@@ -165,7 +176,7 @@ export class Creature {
     this._boredomMate = isUndefined(paramObj.boredomMate) ? randomizeBoredomMate() : paramObj.boredomMate;
     this._energyLostToChild = isUndefined(paramObj.energyLostToChild) ? randomizeEnergyLostToChild() : paramObj.energyLostToChild;
     this._energyLostToCombat = isUndefined(paramObj.energyLostToCombat) ? randomizeEnergyLostToCombat() : paramObj.energyLostToCombat;
-    this._foodMatePreference = isUndefined(paramObj.foodMatePreference) ? randomizeFoodMatePreference() : paramObj.foodMatePreference;
+    this._likelihoodPursueFood = isUndefined(paramObj.likelihoodPursueFood) ? randomizeLikelihoodPursueFood() : paramObj.likelihoodPursueFood;
     this._matingAgreeableness = isUndefined(paramObj.matingAgreeableness) ? randomizeMatingAgreeableness() : paramObj.matingAgreeableness;
 
     // turning likelihoods are probabilities that must add up to <= 1
@@ -196,6 +207,7 @@ export class Creature {
     this._isSeekingMate = false;
     this._idOfMate = null;
     this._isSeekingFood = false;
+    this._idOfFood = null;
     this._locationOfFood = null;
   }
 
@@ -212,16 +224,51 @@ export class Creature {
     this._energy = energy;
   }
 
+  // Computes and returns the next position of the creature given other creatures,
+  // food, and boundaries for movement. Computes based off current creature state
+  // (i.e. does NOT perform proximity check). Does NOT mutate the creature object
+  // in case the caller wishes to perform additional sanity checks on the movement.
   nextPosition(creatures, foods, xmin, xmax, ymin, ymax) {
+    /* ------------------ */
+    /* Mate Pursuit       */
+    /* ------------------ */
     if (this._isSeekingMate) {
       // TODO
       return this._position;
     }
-    if (this._isSeekingFood) {
+
+    /* ------------------ */
+    /* Combat Pursuit     */
+    /* ------------------ */
+    if (this._isSeekingMate) {
       // TODO
       return this._position;
     }
 
+    /* ------------------ */
+    /* Food Pursuit       */
+    /* ------------------ */
+    if (
+      !this._idOfFood || // missing food ID
+      !this._locationOfFood || // missing food location
+      !foods[this._idOfFood] || // food is gone from foods object
+      doesOccurWithProbability(this._boredomFood) // bored looking for food?
+    ) {
+      this._isSeekingFood = false;
+    }
+    if (this._isSeekingFood) {
+      this._direction = arctan(this._locationOfFood.y, this._locationOfFood.x);
+      return getNewPosition(
+        this._position,
+        this._speed,
+        this._direction,
+        xmin, xmax, ymin, ymax
+      );
+    }
+
+    /* ------------------ */
+    /* Wandering          */
+    /* ------------------ */
     const likelihoodSelector = {
       'left': this._likelihoodTurnLeft,
       'right': this._likelihoodTurnRight,
@@ -244,11 +291,31 @@ export class Creature {
         break;
     }
 
-    const xAdvance = this._speed * Math.cos(this._direction);
-    const yAdvance = this._speed * Math.sin(this._direction);
-    const newX = Math.min(Math.max(this._position.x + xAdvance, xmin), xmax);
-    const newY = Math.min(Math.max(this._position.y + yAdvance, ymin), ymax);
-    return new Position(newX, newY);
+    return getNewPosition(
+      this._position,
+      this._speed,
+      this._direction,
+      xmin, xmax, ymin, ymax
+    );
+  }
+
+  scanSurroundingsAndUpdateState(creatures, foods) {
+    let nearbyFoods = getFoodsInProximity(this._position, foods);
+    let nearbyCreatures = getCreaturesInProximity(this._position, foods);
+
+    if (isEmpty(nearbyFoods) && isEmpty(nearbyCreatures)) { return; }
+    if (isEmpty(nearbyFoods)) {
+      // TODO: case with only creatures nearby
+      return;
+    }
+    if (isEmpty(nearbyCreatures)) {
+      if (doesOccurWithProbability(this._likelihoodPursueFood)) {
+        this._isSeekingFood = true;
+      } else {
+        this._isSeekingFood = false;
+      }
+    }
+    // TODO: case with both creatues and food nearby
   }
 
   // Tie goes to the target creature, not the opponent
@@ -279,7 +346,7 @@ export class Creature {
       (this.boredomMate + mate.boredomMate) / 2,
       (this.energyLostToChild + mate.energyLostToChild) / 2,
       (this.energyLostToCombat + mate.energyLostToCombat) / 2,
-      (this.foodMatePreference + mate.foodMatePreference) / 2,
+      (this.likelihoodPursueFood + mate.likelihoodPursueFood) / 2,
       (this.matingAgreeableness + mate.matingAgreeableness) / 2,
       (this.likelihoodTurnRight + mate.likelihoodTurnRight) / 2,
       (this.likelihoodTurnLeft + mate.likelihoodTurnLeft) / 2,

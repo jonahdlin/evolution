@@ -36,9 +36,11 @@ const WorldCanvas = () => {
   const [ hasSpawnedInitialCreatures, setHasSpawnedInitialCreatures ] = useState(false);
 
   const [canvasContext, setCanvasContext] = useState(null);
+  const [lastTimestampProcessed, setLastTimestampProcessed] = useState(null);
   const [timestamp, setTimestamp] = useState(new Timestamp());
   const [simulationSpeed, setSimulationSpeed] = useState(1000);
   const [simulationPaused, setSimulationPaused] = useState(false);
+  const [showVisionCircles, setShowVisionCircles] = useState(false);
 
   useEffect(() => {
     setCanvasContext(canvasDom.current.getContext('2d'));
@@ -79,18 +81,34 @@ const WorldCanvas = () => {
     });
   };
 
-  const renderCreatures = () => {
+  const updateCreaturesObject = () => {
     const width = canvasContext.canvas.clientHeight - CREATURE_WIDTH;
     const height = canvasContext.canvas.clientHeight - CREATURE_HEIGHT;
     updateCreaturePositons(creatures.current, foods.current, 0, width, 0, height);
+  };
+
+  const renderCreatures = () => {
     Object.keys(creatures.current).forEach(id => {
-      CanvasCreature(canvasContext, creatures.current[id]);
+      CanvasCreature({
+        context: canvasContext,
+        creature: creatures.current[id],
+        showVisionCircle: showVisionCircles,
+      });
     });
   };
 
   const renderObjects = () => {
     if (!canvasContext) { return null; }
+
     canvasContext.clearRect(0, 0, canvasDom.current.width, canvasDom.current.height);
+    // Only recalculate objects if the simulation has advanced
+    if (
+      lastTimestampProcessed === null ||
+      timestamp.totalSeconds !== lastTimestampProcessed.totalSeconds
+    ) {
+      updateCreaturesObject();
+      setLastTimestampProcessed(timestamp);
+    }
     renderFood();
     renderCreatures();
   };
@@ -103,10 +121,12 @@ const WorldCanvas = () => {
         initialCreatures={initialCreatures}
         simulationSpeed={Math.floor(simulationSpeed / 1000)}
         hasSpawnedCreatures={hasSpawnedInitialCreatures}
+        showVisionCircles={showVisionCircles}
         handleSpeedUpdate={val => setSimulationSpeed(val * 1000)}
         handleClickPause={() => setSimulationPaused(!simulationPaused)}
         handleUpdateInitialCreature={val => setInitialCreatures(val)}
         handleClickSpawnCreatures={() => handleSetInitialCreatures()}
+        handleClickShowVisionCircles={() => setShowVisionCircles(!showVisionCircles)}
       />
       <MainCanvas ref={canvasDom} width={WORLD_CANVAS_WIDTH} height={WORLD_CANVAS_HEIGHT} />
       {renderObjects()}

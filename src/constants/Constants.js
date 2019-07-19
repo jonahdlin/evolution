@@ -1,4 +1,4 @@
-export const FOOD_SPAWN_PROBABILITY = 0.5;
+export const FOOD_SPAWN_PROBABILITY = 0.1;
 
 export const FOOD_WIDTH = 10;
 export const FOOD_HEIGHT = 10;
@@ -8,6 +8,8 @@ export const CREATURE_HEIGHT = 10;
 
 export const WORLD_CANVAS_WIDTH = 400;
 export const WORLD_CANVAS_HEIGHT = 400;
+
+export const SIGHT_RADIUS = 30;
 
 export const CHILD_GENE_VARIATION = 0.1;
 export const CHILD_GENE_RANDOM_MUTATION_PROBABILITY = 0.1;

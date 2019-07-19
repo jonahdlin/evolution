@@ -4,6 +4,8 @@ import React from 'react';
 import Slider from '@material-ui/lab/Slider';
 import Button from '@material-ui/core/Button';
 import Input from '@material-ui/core/Input';
+import Checkbox from '@material-ui/core/Checkbox';
+import Typography from '@material-ui/core/Typography';
 
 /* Styled Components */
 import {
@@ -18,10 +20,12 @@ const ControlPanel = ({
   initialCreatures,
   simulationSpeed,
   hasSpawnedCreatures,
+  showVisionCircles,
   handleSpeedUpdate,
   handleClickPause,
   handleUpdateInitialCreature,
   handleClickSpawnCreatures,
+  handleClickShowVisionCircles,
 }) => {
   const onChangeSpeed = (event, value) => {
     handleSpeedUpdate(value);
@@ -60,6 +64,12 @@ const ControlPanel = ({
             onChange={onChangeInitialCreatures}
           />
         </InputWrapper>
+      </ControlPanelRowWrapper>
+      <ControlPanelRowWrapper>
+        <Typography>
+          Show Vision Radius
+        </Typography>
+        <Checkbox checked={showVisionCircles} onChange={handleClickShowVisionCircles} />
       </ControlPanelRowWrapper>
     </ControlPanelWrapper>
   );

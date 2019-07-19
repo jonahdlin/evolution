@@ -46,7 +46,7 @@ export const randomizeEnergyLostToCombat = () => {
   return getRandomValueInRange(ENERGY_LOST_TO_COMBAT_MIN, ENERGY_LOST_TO_COMBAT_MAX);
 };
 
-export const randomizeFoodMatePreference = () => {
+export const randomizeLikelihoodPursueFood = () => {
   return getRandomValueInRange(FOOD_MATE_PREFERENCE_MIN, FOOD_MATE_PREFERENCE_MAX);
 };
 
