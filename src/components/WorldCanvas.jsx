@@ -27,9 +27,17 @@ import Typography from '@material-ui/core/Typography';
 import { CanvasWrapper, MainCanvas } from '../styles/WorldCanvas';
 
 const WorldCanvas = () => {
+  /* ------------------ */
+  /* Refs               */
+  /* ------------------ */
   const canvasDom = useRef(null);
+
   const foods = useRef({});
   const creatures = useRef({});
+
+  /* ------------------ */
+  /* State              */
+  /* ------------------ */
 
   const [ initialCreatures, setInitialCreatures ] = useState(40);
   // can only initiate creatures once for now
@@ -41,6 +49,10 @@ const WorldCanvas = () => {
   const [simulationSpeed, setSimulationSpeed] = useState(1000);
   const [simulationPaused, setSimulationPaused] = useState(false);
   const [showVisionCircles, setShowVisionCircles] = useState(false);
+
+  /* ------------------ */
+  /* Effects            */
+  /* ------------------ */
 
   useEffect(() => {
     setCanvasContext(canvasDom.current.getContext('2d'));
@@ -61,19 +73,9 @@ const WorldCanvas = () => {
     }
   }, [timestamp]);
 
-  const handleSetInitialCreatures = () => {
-    if (hasSpawnedInitialCreatures) { return; }
-    for (let i = 0; i < initialCreatures; i++) {
-      const width = canvasContext.canvas.clientHeight - CREATURE_WIDTH;
-      const height = canvasContext.canvas.clientHeight - CREATURE_HEIGHT;
-      const id = generateUniqueId();
-      creatures.current[id] = new Creature({
-        id,
-        position: getRandomPosition(0, width, 0, height),
-      });
-    }
-    setHasSpawnedInitialCreatures(true);
-  };
+  /* ------------------ */
+  /* Rendering          */
+  /* ------------------ */
 
   const renderFood = () => {
     Object.keys(foods.current).forEach(id => {
@@ -112,6 +114,28 @@ const WorldCanvas = () => {
     renderFood();
     renderCreatures();
   };
+
+  /* ------------------ */
+  /* Handlers           */
+  /* ------------------ */
+
+  const handleSetInitialCreatures = () => {
+    if (hasSpawnedInitialCreatures) { return; }
+    for (let i = 0; i < initialCreatures; i++) {
+      const width = canvasContext.canvas.clientHeight - CREATURE_WIDTH;
+      const height = canvasContext.canvas.clientHeight - CREATURE_HEIGHT;
+      const id = generateUniqueId();
+      creatures.current[id] = new Creature({
+        id,
+        position: getRandomPosition(0, width, 0, height),
+      });
+    }
+    setHasSpawnedInitialCreatures(true);
+  };
+
+  /* ------------------ */
+  /* Component          */
+  /* ------------------ */
 
   return (
     <CanvasWrapper>
