@@ -1,5 +1,5 @@
 import { Position } from '../constants/Classes';
-import { SIGHT_RADIUS } from '../constants/Constants';
+import { SIGHT_RADIUS, CREATURE_WIDTH, CREATURE_HEIGHT, FOOD_WIDTH, FOOD_HEIGHT } from '../constants/Constants';
 
 export const doesOccurWithProbability = probability => {
   return Math.random() <= probability;
@@ -68,12 +68,29 @@ export const isInRectangleWithBottomRight = (p, pRect, wRect, hRect) => {
   );
 };
 
+// returns true if the rectangle with origin at p1 and width and height w1 and h1
+// intersects with the rectangle with origin at p2 and width and height w2 and h2
+export const doRectanglesIntersect = (p1, w1, h1, p2, w2, h2) => {
+  return (
+    isInRectangleWithBottomRight(p2, p1, w1, h1) ||
+    isInRectangleWithBottomRight(new Position(p2.x, p2.y + h2), p1, w1, h1) ||
+    isInRectangleWithBottomRight(new Position(p2.x + w2, p2.y), p1, w1, h1) ||
+    isInRectangleWithBottomRight(new Position(p2.x + w2, p2.y + h2), p1, w1, h1) ||
+    isInRectangleWithBottomRight(p1, p2, w2, h2)
+  );
+};
+
 // Taken from https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 export const generateUniqueId = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     var r = Math.random() * 16 | 0; var v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
+};
+
+// Taken from https://www.jacklmoore.com/notes/rounding-in-javascript/
+export const round = (value, decimals) => {
+  return Number(`${Math.round(`${value}e${decimals}`)}e-${decimals}`);
 };
 
 /*
@@ -151,4 +168,28 @@ for all creatures within the SIGHT_RADIUS of p
 */
 export const getCreaturesInProximity = creatures => {
   return {}; // TODO
+};
+
+/*
+returns array of the form [foodId1, foodId2, etc.] for all foods
+intersecting a creature at position p
+*/
+export const getIntersectingFoods = (p, foods) => {
+  const intersectingFoods = [];
+  for (let foodId in foods) {
+    const currFood = foods[foodId];
+    if (
+      doRectanglesIntersect(
+        p,
+        CREATURE_WIDTH,
+        CREATURE_HEIGHT,
+        currFood.position,
+        FOOD_WIDTH,
+        FOOD_HEIGHT,
+      )
+    ) {
+      intersectingFoods.push(currFood.id);
+    }
+  }
+  return intersectingFoods;
 };

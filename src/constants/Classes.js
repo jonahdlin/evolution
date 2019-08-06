@@ -7,7 +7,9 @@ import {
   getNewPosition,
   doesOccurWithProbability,
   getFoodsInProximity,
-  getCreaturesInProximity
+  getCreaturesInProximity,
+  round,
+  getIntersectingFoods
 } from '../utils/UtilFunctions';
 import {
   randomizeSpeed,
@@ -25,6 +27,7 @@ import {
   randomizeVariationAngleTurn,
   randomizeDirection,
 } from '../utils/CreatureGeneRandomizers';
+import { FOOD_ENERGY, ENERGY_LOST_TO_MOVEMENT, STARTING_ENERGY } from './Constants';
 
 export class Timestamp {
   constructor(second, minute, hour, day, year) {
@@ -202,7 +205,7 @@ export class Creature {
     /* --- Status --- */
     this._position = isUndefined(paramObj.position) ? new Position(0, 0) : paramObj.position;
     this._direction = isUndefined(paramObj.direction) ? randomizeDirection() : paramObj.directions; // an angle in radian
-    this._energy = isUndefined(paramObj.energy) ? 0 : paramObj.energy;
+    this._energy = isUndefined(paramObj.energy) ? STARTING_ENERGY : paramObj.energy;
 
     this._isSeekingMate = false;
     this._idOfMate = null;
@@ -213,6 +216,8 @@ export class Creature {
 
   get position() { return this._position; }
 
+  get isDead() { return this._energy === 0; }
+
   get genes() {
     return {
       'id': {
@@ -221,76 +226,72 @@ export class Creature {
       },
       'speed': {
         displayName: 'Speed',
-        value: this._speed,
+        value: round(this._speed, 2),
       },
       'strength': {
         displayName: 'Strength',
-        value: this._strength,
+        value: round(this._strength, 2),
       },
       'boredomFood': {
         displayName: 'Boredom food',
-        value: this._boredomFood,
+        value: round(this._boredomFood, 2),
       },
       'boredomMate': {
         displayName: 'Boredom mate',
-        value: this._boredomMate,
+        value: round(this._boredomMate, 2),
       },
       'energyLostToChild': {
         displayName: 'Energy lost to child',
-        value: this._energyLostToChild,
+        value: round(this._energyLostToChild, 2),
       },
       'energyLostToCombat': {
         displayName: 'Energy lost to combat',
-        value: this._energyLostToCombat,
+        value: round(this._energyLostToCombat, 2),
       },
       'likelihoodPursueFood': {
         displayName: 'Likelihood pursue food',
-        value: this._likelihoodPursueFood,
+        value: round(this._likelihoodPursueFood, 2),
       },
       'matingAgreeableness': {
         displayName: 'Mating agreeableness',
-        value: this._matingAgreeableness,
+        value: round(this._matingAgreeableness, 2),
       },
       'likelihoodTurnRight': {
         displayName: 'Likelihood turn right',
-        value: this._likelihoodTurnRight,
+        value: round(this._likelihoodTurnRight, 2),
       },
       'likelihoodTurnLeft': {
         displayName: 'Likelihood turn left',
-        value: this._likelihoodTurnLeft,
+        value: round(this._likelihoodTurnLeft, 2),
       },
       'angleTurn': {
         displayName: 'Angle turn',
-        value: this._angleTurn,
+        value: round(this._angleTurn, 2),
       },
       'variationAngleTurn': {
         displayName: 'Variation angle turn',
-        value: this._variationAngleTurn,
+        value: round(this._variationAngleTurn, 2),
       },
     };
   }
 
   get status() {
     return {
-      'positionX': {
-        displayName: 'Position X',
-        value: this._position.x,
-      },
-      'positionY': {
-        displayName: 'Position Y',
-        value: this._position.y,
+      'position': {
+        displayName: 'Position',
+        value: `(x: ${round(this._position.x, 2)}, y: ${round(this._position.y, 2)})`,
       },
       'direction': {
         displayName: 'Direction',
-        value: this._direction,
+        value: `${round(this._direction, 2)} radians`,
       },
       'energy': {
         displayName: 'Energy',
-        value: this._energy,
+        value: round(this._energy, 0),
       },
       'isSeekingMate': {
         displayName: 'Is seeking mate',
-        value: this._isSeekingMate,
+        value: this._isSeekingMate ? 'True' : 'False',
       },
       'idOfMate': {
         displayName: 'Id of mate',
@@ -298,7 +299,7 @@ export class Creature {
       },
       'isSeekingFood': {
         displayName: 'Is seeking food',
-        value: this._isSeekingFood,
+        value: this._isSeekingFood ? 'True' : 'False',
       },
       'idOfFood': {
         displayName: 'Id of food',
@@ -306,7 +307,9 @@ export class Creature {
       },
       'locationOfFood': {
         displayName: 'Location of food',
-        value: this._locationOfFood,
+        value: this._locationOfFood
+          ? `(x: ${round(this._locationOfFood.x, 2)}, y: ${round(this._locationOfFood.y, 2)})`
+          : null,
       },
     };
   }
@@ -316,10 +319,24 @@ export class Creature {
       return;
     }
     this._position = position;
+    this._energy -= ENERGY_LOST_TO_MOVEMENT;
+  }
+
+  changeDirection(angle) {
+    this._direction = angle % (2 * Math.PI);
   }
 
   changeEnergy(energy) {
     this._energy = energy;
+  }
+
+  consumeFoods(foods) {
+    const intersectingFoods = getIntersectingFoods(this._position, foods);
+    // console.log(intersectingFoods);
+    intersectingFoods.forEach(id => {
+      this.changeEnergy(this._energy + FOOD_ENERGY);
+      delete foods[id];
+    });
   }
 
   // Computes and returns the next position of the creature given other creatures,
@@ -353,9 +370,16 @@ export class Creature {
       doesOccurWithProbability(this._boredomFood) // bored looking for food?
     ) {
       this._isSeekingFood = false;
+      this._idOfFood = null;
+      this._locationOfFood = null;
     }
     if (this._isSeekingFood) {
-      this._direction = arctan(this._locationOfFood.y, this._locationOfFood.x);
+      this.changeDirection(
+        arctan(
+          this._locationOfFood.y - this._position.y,
+          this._locationOfFood.x - this._position.x
+        )
+      );
       return getNewPosition(
         this._position,
         this._speed,
@@ -380,10 +404,10 @@ export class Creature {
     );
     switch (selectedDirection) {
       case 'left':
-        this._direction = this._direction + directionModifier;
+        this.changeDirection(this._direction + directionModifier);
         break;
       case 'right':
-        this._direction = this._direction - directionModifier;
+        this.changeDirection(this._direction - directionModifier);
         break;
       default:
         break;
@@ -398,6 +422,7 @@ export class Creature {
   }
 
   scanSurroundingsAndUpdateState(creatures, foods) {
+    if (this._isSeekingFood || this._isSeekingMate) { return; }
     let nearbyFoods = getFoodsInProximity(this._position, foods);
     let nearbyCreatures = getCreaturesInProximity(this._position, foods);
 
@@ -408,9 +433,14 @@ export class Creature {
     }
     if (isEmpty(nearbyCreatures)) {
       if (doesOccurWithProbability(this._likelihoodPursueFood)) {
+        const randomFoodId = Object.keys(nearbyFoods)[0];
         this._isSeekingFood = true;
+        this._idOfFood = randomFoodId;
+        this._locationOfFood = nearbyFoods[randomFoodId].position;
       } else {
         this._isSeekingFood = false;
+        this._idOfFood = null;
+        this._locationOfFood = null;
       }
     }
     // TODO: case with both creatues and food nearby
