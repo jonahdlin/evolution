@@ -41,9 +41,7 @@ const WorldCanvas = () => {
   /* State              */
   /* ------------------ */
 
-  const [ initialCreatures, setInitialCreatures ] = useState(DEFAULT_INITIAL_CREATURES);
-  // can only initiate creatures once for now
-  const [ hasSpawnedInitialCreatures, setHasSpawnedInitialCreatures ] = useState(false);
+  const [ creaturesToSpawn, setCreaturesToSpawn ] = useState(DEFAULT_INITIAL_CREATURES);
 
   const [canvasContext, setCanvasContext] = useState(null);
   const [lastTimestampProcessed, setLastTimestampProcessed] = useState(null);
@@ -157,9 +155,8 @@ const WorldCanvas = () => {
   /* Handlers           */
   /* ------------------ */
 
-  const handleSetInitialCreatures = () => {
-    if (hasSpawnedInitialCreatures) { return; }
-    for (let i = 0; i < initialCreatures; i++) {
+  const handleSpawnCreatures = () => {
+    for (let i = 0; i < creaturesToSpawn; i++) {
       const width = canvasContext.canvas.clientHeight - CREATURE_WIDTH;
       const height = canvasContext.canvas.clientHeight - CREATURE_HEIGHT;
       const id = generateUniqueId();
@@ -168,7 +165,6 @@ const WorldCanvas = () => {
         position: getRandomPosition(0, width, 0, height),
       });
     }
-    setHasSpawnedInitialCreatures(true);
   };
 
   /* ------------------ */
@@ -190,14 +186,13 @@ const WorldCanvas = () => {
         <Typography>{timestamp.stringOut}</Typography>
         <Typography>{`Simulation Speed: ${simulationPaused ? 'Paused' : `${simulationSpeed / 1000} sim. sec / IRL sec`}`}</Typography>
         <ControlPanel
-          initialCreatures={initialCreatures}
+          creaturesToSpawn={creaturesToSpawn}
           simulationSpeed={Math.floor(simulationSpeed / 1000)}
-          hasSpawnedCreatures={hasSpawnedInitialCreatures}
           showVisionCircles={showVisionCircles}
           handleSpeedUpdate={val => setSimulationSpeed(val * 1000)}
           handleClickPause={() => setSimulationPaused(!simulationPaused)}
-          handleUpdateInitialCreature={val => setInitialCreatures(val)}
-          handleClickSpawnCreatures={() => handleSetInitialCreatures()}
+          handleUpdateCreaturesToSpawn={val => setCreaturesToSpawn(val)}
+          handleClickSpawnCreatures={() => handleSpawnCreatures()}
           handleClickShowVisionCircles={() => setShowVisionCircles(!showVisionCircles)}
         />
         <MainCanvas ref={canvasDom} width={WORLD_CANVAS_WIDTH} height={WORLD_CANVAS_HEIGHT} />

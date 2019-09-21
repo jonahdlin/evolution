@@ -18,13 +18,12 @@ import {
 import { SIMULATION_SPEED_SLIDER_MIN, SIMULATION_SPEED_SLIDER_MAX } from '../constants/Constants';
 
 const ControlPanel = ({
-  initialCreatures,
+  creaturesToSpawn,
   simulationSpeed,
-  hasSpawnedCreatures,
   showVisionCircles,
   handleSpeedUpdate,
   handleClickPause,
-  handleUpdateInitialCreature,
+  handleUpdateCreaturesToSpawn,
   handleClickSpawnCreatures,
   handleClickShowVisionCircles,
 }) => {
@@ -32,8 +31,8 @@ const ControlPanel = ({
     handleSpeedUpdate(value);
   };
 
-  const onChangeInitialCreatures = event => {
-    handleUpdateInitialCreature(event.target.value);
+  const onChangeCreaturesToSpawn = event => {
+    handleUpdateCreaturesToSpawn(event.target.value);
   };
 
   return (
@@ -55,14 +54,12 @@ const ControlPanel = ({
         <ButtonWrapper>
           <Button
             onClick={handleClickSpawnCreatures}
-            disabled={hasSpawnedCreatures}
           >Spawn</Button>
         </ButtonWrapper>
         <InputWrapper>
           <Input
-            disabled={hasSpawnedCreatures}
-            value={initialCreatures}
-            onChange={onChangeInitialCreatures}
+            value={creaturesToSpawn}
+            onChange={onChangeCreaturesToSpawn}
           />
         </InputWrapper>
       </ControlPanelRowWrapper>
