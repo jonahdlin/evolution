@@ -112,7 +112,7 @@ export const arctan = (opposite, adjacent) => {
     return Math.atan(opposite / adjacent);
   }
   // Quadrant 2
-  if (opposite < 0 && adjacent > 0) {
+  if (opposite > 0 && adjacent < 0) {
     return Math.PI - Math.atan((-opposite) / adjacent);
   }
   // Quadrant 3
