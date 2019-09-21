@@ -21,11 +21,13 @@ const ControlPanel = ({
   creaturesToSpawn,
   simulationSpeed,
   showVisionCircles,
+  showDirections,
   handleSpeedUpdate,
   handleClickPause,
   handleUpdateCreaturesToSpawn,
   handleClickSpawnCreatures,
   handleClickShowVisionCircles,
+  handleClickShowDirections,
 }) => {
   const onChangeSpeed = (event, value) => {
     handleSpeedUpdate(value);
@@ -68,6 +70,12 @@ const ControlPanel = ({
           Show Vision Radius
         </Typography>
         <Checkbox checked={showVisionCircles} onChange={handleClickShowVisionCircles} />
+      </ControlPanelRowWrapper>
+      <ControlPanelRowWrapper>
+        <Typography>
+          Show Directions
+        </Typography>
+        <Checkbox checked={showDirections} onChange={handleClickShowDirections} />
       </ControlPanelRowWrapper>
     </ControlPanelWrapper>
   );

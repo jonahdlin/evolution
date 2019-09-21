@@ -51,6 +51,7 @@ const WorldCanvas = () => {
 
   // Debug stuff for creatures
   const [showVisionCircles, setShowVisionCircles] = useState(false);
+  const [showDirections, setShowDirections] = useState(false);
   const [creatureInfoId, setCreatureInfoId] = useState(null);
 
   /* ------------------ */
@@ -130,6 +131,7 @@ const WorldCanvas = () => {
         context: canvasContext,
         creature: creatures.current[id],
         showVisionCircle: showVisionCircles,
+        showDirection: showDirections,
         isSelected: id === creatureInfoId,
       });
     });
@@ -186,14 +188,16 @@ const WorldCanvas = () => {
         <Typography>{timestamp.stringOut}</Typography>
         <Typography>{`Simulation Speed: ${simulationPaused ? 'Paused' : `${simulationSpeed / 1000} sim. sec / IRL sec`}`}</Typography>
         <ControlPanel
-          creaturesToSpawn={creaturesToSpawn}
           simulationSpeed={Math.floor(simulationSpeed / 1000)}
+          creaturesToSpawn={creaturesToSpawn}
           showVisionCircles={showVisionCircles}
+          showDirection={showDirections}
           handleSpeedUpdate={val => setSimulationSpeed(val * 1000)}
           handleClickPause={() => setSimulationPaused(!simulationPaused)}
           handleUpdateCreaturesToSpawn={val => setCreaturesToSpawn(val)}
           handleClickSpawnCreatures={() => handleSpawnCreatures()}
           handleClickShowVisionCircles={() => setShowVisionCircles(!showVisionCircles)}
+          handleClickShowDirections={() => setShowDirections(!showDirections)}
         />
         <MainCanvas ref={canvasDom} width={WORLD_CANVAS_WIDTH} height={WORLD_CANVAS_HEIGHT} />
         {renderObjects()}

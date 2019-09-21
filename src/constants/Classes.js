@@ -216,6 +216,8 @@ export class Creature {
 
   get position() { return this._position; }
 
+  get direction() { return this._direction; }
+
   get isDead() { return this._energy === 0; }
 
   get genes() {

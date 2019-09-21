@@ -77,3 +77,15 @@ The project will use React with no strict typing for page design, and HTML5 canv
 ## Inspiration
 
 This project is inspired by YouTuber SethBling's video on [Genetic Evolution in Minecraft 1.14](https://youtu.be/9aIp5DdnKwM).
+
+## To-do
+
+### Performance
+- Creatures (and possibly food too) renders twice per frame currently
+- Add a queuing system for collision detection so each frame we only find collisions that are possible to happen that frame
+  - Maintain a collision detection queue, each entry in which is an array of objects in the sim
+  - Any time a new creature or food is added to the sim, it is put in the first entry of the queue
+  - Every frame, we loop through the first queue entry and determine if there is a collision. If so, process it. If not, we calculate the minimum possible number of frames before it's possible to meet that object again. Based off this number, we put that object some distance back in the queue.
+    - For food, which is stationary, we can use the creature's speed to determine in the worst case how many frames it will take to reach the food, so we need not process that food again until we;ve reached that minimum number
+    - For creatures we can do similar, but use both creature's speeds to see how many frames it would take them to collide if they both went head on for each other
+  - Delete the first entry in the queue. At this point all the objects that were in the first entry should have been either processed and deleted or put in another non-first entry of the queue.

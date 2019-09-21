@@ -19,6 +19,13 @@ export const CHILD_GENE_VARIATION = 0.1;
 export const CHILD_GENE_RANDOM_MUTATION_PROBABILITY = 0.1;
 
 /* -------------------- */
+/* Debug Values         */
+/* -------------------- */
+
+export const CREATURE_DIRECTION_DEBUG_ARROW_LENGTH = 50;
+export const CREATURE_DIRECTION_DEBUG_ARROW_TIP_RADIUS = 3;
+
+/* -------------------- */
 /* Control Panel Values */
 /* -------------------- */
 
